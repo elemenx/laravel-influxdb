@@ -2,8 +2,8 @@
 
 namespace Laravel\InfluxDB;
 
-use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Foundation\Application as LaravelApplication;
+use Laravel\Lumen\Application as LumenApplication;
 use Illuminate\Support\ServiceProvider as IlluminateServiceProvider;
 use InfluxDB\Client;
 use InfluxDB\Database;
@@ -39,8 +39,11 @@ class ServiceProvider extends IlluminateServiceProvider
             ], 'laravel-influxdb-config');
         }
 
-        if (version_compare(Application::VERSION, '5.6.0', '>=')) {
-            Log::extend('influxdb', function ($app, array $config) {
+        if (
+            class_exists(LaravelApplication::class) && version_compare(LaravelApplication::VERSION, '5.6.0', '>=') ||
+            class_exists(LumenApplication::class)
+        ) {
+            $this->app->log->extend('influxdb', function ($app, array $config) {
                 $handler = new Handler(
                     $config['level'] ?? Logger::WARNING,
                     $config['bubble'] ?? true
